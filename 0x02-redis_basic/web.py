@@ -8,7 +8,7 @@ from typing import Callable
 from functools import wraps
 
 # Initialize a single Redis client to ensure consistency
-redis_client = redis.Redis(decode_responses=False)  # Keep responses as bytes
+_redis = redis.Redis(decode_responses=False)  # Keep responses as bytes
 
 def track_url_access(method: Callable) -> Callable:
     """Decorator to track URL access count and cache results"""
@@ -17,11 +17,11 @@ def track_url_access(method: Callable) -> Callable:
         """Wrapper function for tracking and caching"""
         # Increment access count
         count_key = f"count:{url}"
-        redis_client.incr(count_key)
+        _redis.incr(count_key)
         
         # Check cache
         cache_key = f"cache:{url}"
-        cached_content = redis_client.get(cache_key)
+        cached_content = _redis.get(cache_key)
         
         if cached_content:
             return cached_content.decode("utf-8")
@@ -30,10 +30,10 @@ def track_url_access(method: Callable) -> Callable:
         try:
             content = method(url)
             # Ensure content is stored as bytes
-            redis_client.setex(cache_key, 10, content.encode("utf-8"))
+            _redis.setex(cache_key, 10, content.encode("utf-8"))
             return content
         except requests.RequestException:
-            return ""  # Return empty string on failure (checker may expect this)
+            return ""  # Return empty string on failure
     
     return wrapper
 
