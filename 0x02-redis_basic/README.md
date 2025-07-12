@@ -36,7 +36,6 @@ Redis server is stopped by default - when you are starting a container, you shou
 ├── exercise.py
 ├── web.py
 ├── main.py          # For testing Tasks 0-4
-├── main_web.py     # Optional: For testing Task 5 (or name it differently to avoid confusion)
 └── README.md
 ```
 
