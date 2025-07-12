@@ -49,8 +49,7 @@ def replay(method: Callable) -> None:
     
     print(f"{method.__qualname__} was called {len(inputs)} times:")
     for inp, out in zip(inputs, outputs):
-       # Ensure input is displayed without quotes for single-string args
-        input_str = inp.decode("utf-8").strip("('')")
+        input_str = inp.decode("utf-8")
         print(f"{method.__qualname__}(*{input_str}) -> {out.decode('utf-8')}")
 
 
