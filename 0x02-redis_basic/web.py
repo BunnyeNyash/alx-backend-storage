@@ -7,6 +7,7 @@ import requests
 from typing import Callable
 from functools import wraps
 
+redis_client = redis.Redis()
 
 def track_url_access(method: Callable) -> Callable:
     """Decorator to track URL access count and cache results"""
@@ -36,6 +37,15 @@ def track_url_access(method: Callable) -> Callable:
 
 @track_url_access
 def get_page(url: str) -> str:
+    # Count how many times the URL was accessed
+    redis_client.incr(f"count:{url}")
+
+    # Try to get cached version
+    cached = redis_client.get(url)
+    if cached:
+        return cached.decode("utf-8")
+
     """Get HTML content of a URL"""
     response = requests.get(url)
+    redis_client.setex(url, 10, response.text)
     return response.text
