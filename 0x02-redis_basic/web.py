@@ -8,7 +8,7 @@ from typing import Callable
 from functools import wraps
 
 # Initialize a single Redis client to ensure consistency
-_redis = redis.Redis(decode_responses=True)  # Changed to decode responses as strings
+_redis = redis.Redis(decode_responses=False)  # Keep responses as bytes
 
 
 def track_url_access(method: Callable) -> Callable:
@@ -25,13 +25,13 @@ def track_url_access(method: Callable) -> Callable:
         cached_content = _redis.get(cache_key)
 
         if cached_content:
-            return cached_content  # No need to decode since decode_responses=True
+            return cached_content.decode("utf-8")
 
         # Get content and cache it
         try:
             content = method(url)
-            # Store content as string (decode_responses=True handles this)
-            _redis.setex(cache_key, 10, content)
+            # Ensure content is stored as bytes
+            _redis.setex(cache_key, 10, content.encode("utf-8"))
             return content
         except requests.RequestException:
             return ""  # Return empty string on failure
